@@ -1,358 +1,2166 @@
 <!DOCTYPE html>
+
 <html lang="es">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Laboratorio VR - Mitosis</title>
+  <meta charset="utf-8">
 
-    <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1"
 
-    <link rel="stylesheet" href="css/style.css">
+>
+
+  <title>Ciclo Celular VR</title>
+
+  <!-- ==========================================
+       A-FRAME
+  =========================================== -->
+
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+
+  <style>
+
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
+
+    /* ==========================================
+       INFORMACIÓN SUPERIOR
+    =========================================== */
+
+    #phaseInfo {
+
+      position: fixed;
+
+      top: 20px;
+
+      left: 50%;
+
+      transform: translateX(-50%);
+
+      z-index: 10;
+
+      padding: 12px 24px;
+
+      background: rgba(8, 15, 30, 0.88);
+
+      color: white;
+
+      border-radius: 14px;
+
+      text-align: center;
+
+      min-width: 250px;
+
+      border: 1px solid rgba(255,255,255,0.15);
+
+      pointer-events: none;
+
+      box-sizing: border-box;
+
+    }
+
+    #phaseTitle {
+
+      font-size: 18px;
+
+      font-weight: bold;
+
+      margin-bottom: 5px;
+
+    }
+
+    #phaseCounter {
+
+      font-size: 11px;
+
+      opacity: 0.65;
+
+      letter-spacing: 2px;
+
+    }
+
+    /* ==========================================
+       BARRA DE PROGRESO
+    =========================================== */
+
+    #progressContainer {
+
+      position: fixed;
+
+      bottom: 22px;
+
+      left: 50%;
+
+      transform: translateX(-50%);
+
+      width: min(650px, 70vw);
+
+      height: 7px;
+
+      background: rgba(255,255,255,0.18);
+
+      border-radius: 20px;
+
+      z-index: 10;
+
+      pointer-events: none;
+
+    }
+
+    #progressBar {
+
+      height: 100%;
+
+      width: 0%;
+
+      background: #4D96FF;
+
+      border-radius: 20px;
+
+    }
+
+    /* ==========================================
+       TIEMPO
+    =========================================== */
+
+    #timeInfo {
+
+      position: fixed;
+
+      bottom: 35px;
+
+      left: 50%;
+
+      transform: translateX(-50%);
+
+      z-index: 10;
+
+      color: white;
+
+      font-size: 11px;
+
+      background: rgba(8,15,30,0.65);
+
+      padding: 4px 10px;
+
+      border-radius: 8px;
+
+      pointer-events: none;
+
+    }
+
+  </style>
+
 </head>
 
 <body>
 
-    <!-- =========================================================
-         INFORMACIÓN DE LA FASE
-    ========================================================== -->
+  <!-- ==========================================
+       INFORMACIÓN DE FASE
+  =========================================== -->
 
-    <div id="info-panel">
+  <div id="phaseInfo">
 
-        <h1 id="phase-title">Interfase</h1>
+```
+<div id="phaseTitle">
+  Interfase
+</div>
 
-        <p id="phase-description">
-            La célula crece y duplica su ADN antes de comenzar la mitosis.
-        </p>
+<div id="phaseCounter">
+  FASE 1 DE 4
+</div>
+```
 
-        <div id="phase-counter">
-            Fase 1 / 7
-        </div>
+  </div>
 
-    </div>
+  <!-- ==========================================
+       INFORMACIÓN DE TIEMPO
+  =========================================== -->
+
+  <div id="timeInfo">
+    0.00 / 5.00 s
+  </div>
+
+  <!-- ==========================================
+       BARRA DE PROGRESO
+  =========================================== -->
+
+  <div id="progressContainer">
+
+```
+<div id="progressBar"></div>
+```
+
+  </div>
+
+  <!-- ==========================================
+       ESCENA
+  =========================================== -->
+
+<a-scene
+
+```
+background="color: #ECECEC"
+
+vr-mode-ui="enabled: true"
+
+renderer="
+  colorManagement: true;
+  physicallyCorrectLights: true
+"
+```
+
+>
+
+```
+<!-- ========================================
+     ASSETS
+========================================= -->
+
+<a-assets>
+
+  <a-asset-item
+    id="modelInterfase"
+    src="Interfase-1.glb"
+  >
+  </a-asset-item>
 
 
-    <!-- =========================================================
-         CONTROLES DE ESCRITORIO
-    ========================================================== -->
-
-    <div id="controls">
-
-        <button id="previous-btn">
-            ◀ Anterior
-        </button>
-
-        <button id="next-btn">
-            Siguiente ▶
-        </button>
-
-        <button id="reset-btn">
-            ↻ Reiniciar
-        </button>
-
-    </div>
+  <a-asset-item
+    id="modelProfase"
+    src="Profase-2.glb"
+  >
+  </a-asset-item>
 
 
-    <!-- =========================================================
-         ESCENA A-FRAME
-    ========================================================== -->
+  <a-asset-item
+    id="modelMetafase"
+    src="Promerafase y Metafase-3.glb"
+  >
+  </a-asset-item>
 
-    <a-scene
-        id="mitosis-scene"
-        background="color: #050816"
-        renderer="colorManagement: true; physicallyCorrectLights: true"
-        vr-mode-ui="enabled: true"
+
+  <a-asset-item
+    id="modelTelofase"
+    src="Anafase y Telofase-4.glb"
+  >
+  </a-asset-item>
+
+</a-assets>
+
+
+<!-- ========================================
+     CÁMARA / RIG VR
+========================================= -->
+
+<a-entity
+  id="cameraRig"
+  position="0 0 0"
+>
+
+  <a-camera
+
+    id="camera"
+
+    position="0 1.6 2s"
+
+    look-controls
+
+    wasd-controls
+
+  >
+
+    <!-- Cursor escritorio -->
+
+    <a-entity
+
+      cursor="
+        fuse: true;
+        fuseTimeout: 600
+      "
+
+      position="0 0 -1"
+
+      geometry="
+        primitive: ring;
+        radiusInner: 0.018;
+        radiusOuter: 0.028
+      "
+
+      material="
+        color: #111827;
+        shader: flat
+      "
+
+      raycaster="
+        objects: .clickable
+      "
+
     >
-
-        <!-- =====================================================
-             CÁMARA
-        ====================================================== -->
-
-        <a-entity id="camera-rig">
-
-            <a-camera
-                position="0 1.6 6"
-                look-controls="enabled: true"
-            >
-
-                <!-- Cursor para escritorio -->
-
-                <a-cursor
-                    raycaster="objects: .clickable"
-                    fuse="false"
-                    material="color: #FFFFFF; shader: flat"
-                ></a-cursor>
-
-            </a-camera>
-
-
-            <!-- Control izquierdo -->
-
-            <a-entity
-                id="left-controller"
-                laser-controls="hand: left"
-                raycaster="objects: .clickable"
-            ></a-entity>
-
-
-            <!-- Control derecho -->
-
-            <a-entity
-                id="right-controller"
-                laser-controls="hand: right"
-                raycaster="objects: .clickable"
-            ></a-entity>
-
-        </a-entity>
-
-
-        <!-- =====================================================
-             ILUMINACIÓN
-        ====================================================== -->
-
-        <a-light
-            type="ambient"
-            intensity="1.5"
-        ></a-light>
-
-        <a-light
-            type="point"
-            position="0 4 4"
-            intensity="3"
-        ></a-light>
-
-
-        <!-- =====================================================
-             CÉLULA
-        ====================================================== -->
-
-        <a-entity id="cell"     
-          id="cell"
-          position="0 1 0"
-        >
-
-            <!-- Membrana celular -->
-
-            <a-sphere
-                id="cell-membrane"
-                radius="3"
-                material="
-                    color:#3f8cff;
-                    transparent:true;
-                    opacity:0.12;
-                    side:double;
-                    roughness:0.3;
-                "
-            ></a-sphere>
-
-
-            <!-- Núcleo -->
-
-            <a-sphere
-                id="nucleus"
-                radius="1.5"
-                material="
-                    color:#9146ff;
-                    transparent:true;
-                    opacity:0.22;
-                    side:double;
-                "
-            ></a-sphere>
-
-
-            <!-- Cromatina -->
-
-            <a-entity id="chromatin">
-
-                <a-sphere
-                    position="-0.5 0.3 0"
-                    radius="0.12"
-                    color="#ff4fa3"
-                ></a-sphere>
-
-                <a-sphere
-                    position="0.2 -0.2 0.3"
-                    radius="0.12"
-                    color="#ff4fa3"
-                ></a-sphere>
-
-                <a-sphere
-                    position="0.5 0.4 -0.2"
-                    radius="0.12"
-                    color="#ff4fa3"
-                ></a-sphere>
-
-                <a-sphere
-                    position="-0.3 -0.5 -0.2"
-                    radius="0.12"
-                    color="#ff4fa3"
-                ></a-sphere>
-
-            </a-entity>
-
-
-            <!-- Cromosomas -->
-
-            <a-entity id="chromosomes"></a-entity>
-
-
-            <!-- Centrosomas -->
-
-            <a-entity id="centrosomes">
-
-                <a-sphere
-                    id="centrosome-left"
-                    position="-2 0 0"
-                    radius="0.18"
-                    color="#00ffff"
-                ></a-sphere>
-
-                <a-sphere
-                    id="centrosome-right"
-                    position="2 0 0"
-                    radius="0.18"
-                    color="#00ffff"
-                ></a-sphere>
-
-            </a-entity>
-
-
-            <!-- Huso mitótico -->
-
-            <a-entity id="spindle"></a-entity>
-
-        </a-entity>
-
-        <!-- ================================================= -->
-        <!-- GLB de Prueba -->
-        <!-- ================================================= -->
-
-    <a-box
-        id="botonPrueba"
-        class="clickable"
-        position="0 0.7 -2.5"
-        width="2"
-        height="0.7"
-        depth="0.25"
-        color="#22C55E">
-
-        <a-text
-            value="PROBAR CONTROL"
-            align="center"
-            position="0 0 0.14"
-            width="3"
-            color="#FFFFFF">
-        </a-text>
-
-    </a-box>
-
-
-    <!-- ================================================= -->
-    <!-- BOTÓN VOLVER -->
-    <!-- ================================================= -->
-
-    <a-box
-        id="volver"
-        class="clickable"
-        position="3 0.7 -3"
-        width="1.5"
-        height="0.6"
-        depth="0.2"
-        color="#EF4444">
-
-        <a-text
-            value="VOLVER"
-            align="center"
-            position="0 0 0.12"
-            width="2.5"
-            color="#FFFFFF">
-        </a-text>
-
-    </a-box>
-
-    <!-- ================================================= -->
-    <!-- GLB de Prueba -->
-    <!-- ================================================= -->
-
-    <a-assets>
-        <a-asset-item id="mitosis-stage-3" src="mitosis_stage_3.glb"></a-asset-item>
-        <a-asset-item id="mitosis-model" src="mitosis.glb"></a-asset-item>
-    </a-assets>
-
-    <a-entity
-        gltf-model="#mitosis-stage-3"
-        position="3 1.7 -4"
-        scale="0.01 0.01 0.01"
-        mitosis-model-position>
     </a-entity>
 
-    <a-entity
-        gltf-model="#mitosis-model"
-        position="-2 1 -2"
-        scale="0.7 0.7 0.7"
-        mitosis-model-position
-        mitosis-model-animation>
-    </a-entity>
+  </a-camera>
 
 
-    <!-- ================================================= -->
-    <!-- CONTROL IZQUIERDO -->
-    <!-- ================================================= -->
+  <!-- ======================================
+       CONTROLADOR IZQUIERDO
+  ======================================= -->
 
-        <a-entity
-            gltf-model="#mitosis-stage-3"
-            position="3 1.7 -4"
-            scale="0.01 0.01 0.01"
-            mitosis-model-position>
-        </a-entity>
+  <a-entity
 
-        <a-entity
-            gltf-model="#mitosis-model"
-            position="-2 1 -2"
-            scale="0.7 0.7 0.7"
-            mitosis-model-position
-            mitosis-model-animation>
-        </a-entity>
+    laser-controls="
+      hand: left
+    "
 
-        <!-- =====================================================
-             TEXTO DENTRO DEL MUNDO
-        ====================================================== -->
+    raycaster="
+      objects: .clickable;
+      far: 10
+    "
 
-        <a-entity
-            position="0 -2.5 0"
-            text="
-                value: MITOSIS;
-                align:center;
-                width:6;
-                color:#FFFFFF;
-                font:roboto;
-            "
-        ></a-entity>
+  >
+  </a-entity>
 
 
-        <!-- =====================================================
-             PISO
-        ====================================================== -->
+  <!-- ======================================
+       CONTROLADOR DERECHO
+  ======================================= -->
 
-        <a-plane
-            rotation="-90 0 0"
-            width="20"
-            height="20"
-            color="#080d1d"
-        ></a-plane>
+  <a-entity
+
+    laser-controls="
+      hand: right
+    "
+
+    raycaster="
+      objects: .clickable;
+      far: 10
+    "
+
+  >
+  </a-entity>
+
+</a-entity>
 
 
-        <!-- =====================================================
-             SONIDO AMBIENTE
-        ====================================================== -->
+<!-- ========================================
+     MODELO 1 - INTERFASE
+========================================= -->
 
-        <!-- Puedes añadir audio posteriormente -->
+<a-entity
 
-    </a-scene>
+  id="phase1"
+
+  gltf-model="#modelInterfase"
+
+  visible="true"
+
+  position="1 2.7 -2"
+
+>
+</a-entity>
 
 
-    <script src="js/mitosis.js"></script>
+<!-- ========================================
+     MODELO 2 - PROFASE
+========================================= -->
+
+<a-entity
+
+  id="phase2"
+
+  gltf-model="#modelProfase"
+
+  visible="false"
+
+  position="0 2.7 -2"
+
+>
+</a-entity>
+
+
+<!-- ========================================
+     MODELO 3 - METAFASE
+========================================= -->
+
+<a-entity
+
+  id="phase3"
+
+  gltf-model="#modelMetafase"
+
+  visible="false"
+
+  position="0 2.7 -2"
+
+>
+</a-entity>
+
+
+<!-- ========================================
+     MODELO 4 - ANAFASE / TELOFASE
+     DOS COPIAS FIJAS
+========================================= -->
+
+<a-entity
+
+  id="phase4"
+
+  visible="false"
+
+  position="1 0 0"
+
+>
+
+  <!-- =================================
+       COPIA IZQUIERDA
+       FIJA
+  ================================== -->
+
+  <a-entity
+
+    id="phase4Left"
+
+    gltf-model="#modelTelofase"
+
+    position="0 2.7 -2"
+
+  >
+  </a-entity>
+
+
+  <!-- =================================
+       COPIA DERECHA
+       FIJA
+  ================================== -->
+
+  <a-entity
+
+    id="phase4Right"
+
+    gltf-model="#modelTelofase"
+
+    position="0 2.7 -2"
+
+  >
+  </a-entity>
+
+</a-entity>
+
+
+<!-- ========================================
+     PANEL DE DESCRIPCIÓN DE LA FASE
+     
+     PANEL 3D PARA VR
+========================================= -->
+
+<a-entity
+
+  id="descriptionPanel"
+
+  position="-3.7 2.5 -2"
+
+  rotation="0 30 0"
+
+>
+
+  <!-- ====================================
+       FONDO DEL PANEL
+  ===================================== -->
+
+  <a-plane
+
+    width="2.8"
+
+    height="2.2"
+
+    material="
+      color: #07111F;
+      opacity: 0.94;
+      transparent: true
+    "
+
+  >
+  </a-plane>
+
+
+  <!-- ====================================
+       TÍTULO DE LA FASE
+  ===================================== -->
+
+  <a-text
+
+    id="descriptionTitle"
+
+    value="Interfase"
+
+    align="center"
+
+    color="#8DDFFF"
+
+    width="2.5"
+
+    position="0 0.82 0.03"
+
+  >
+  </a-text>
+
+
+  <!-- ====================================
+       LÍNEA SEPARADORA
+  ===================================== -->
+
+  <a-plane
+
+    width="2.25"
+
+    height="0.015"
+
+    material="
+      color: #8DDFFF;
+      opacity: 0.8
+    "
+
+    position="0 0.58 0.03"
+
+  >
+  </a-plane>
+
+
+  <!-- ====================================
+       SUBTÍTULO
+  ===================================== -->
+
+  <a-text
+
+    value="¿QUE ESTA OCURRIENDO?"
+
+    align="left"
+
+    color="#8DDFFF"
+
+    width="2.1"
+
+    position="-1.05 0.42 0.03"
+
+  >
+  </a-text>
+
+
+  <!-- ====================================
+       DESCRIPCIÓN
+  ===================================== -->
+
+  <a-text
+
+    id="descriptionText"
+
+    value="La célula crece y realiza sus funciones normales. También duplica su ADN para prepararse para la división celular."
+
+    align="left"
+
+    color="#FFFFFF"
+
+    width="2.2"
+
+    wrap-count="38"
+
+    line-height="60"
+
+    position="-1.05 0.12 0.03"
+
+  >
+  </a-text>
+
+</a-entity>
+
+
+<!-- ========================================
+     PANEL PRINCIPAL
+========================================= -->
+
+<a-entity
+
+  id="controlPanel"
+
+  position="0 1.15 -2"
+
+  scale="0.5 0.5 0.5"
+
+>
+
+  <!-- ====================================
+       FONDO
+  ===================================== -->
+
+  <a-plane
+
+    width="4.8"
+
+    height="1.75"
+
+    material="
+      color: #07111F;
+      opacity: 0.94;
+      transparent: true
+    "
+
+  >
+  </a-plane>
+
+
+  <!-- ====================================
+       TÍTULO
+  ===================================== -->
+
+  <a-text
+
+    value="CONTROL DE LA EXPERIENCIA"
+
+    align="center"
+
+    color="#8DDFFF"
+
+    width="4.5"
+
+    position="0 0.68 0.02"
+
+  >
+  </a-text>
+
+
+  <!-- ====================================
+       CAMBIO DE FASE
+  ===================================== -->
+
+  <a-text
+
+    value="CAMBIAR DE FASE"
+
+    align="center"
+
+    color="#FFFFFF"
+
+    width="3"
+
+    position="0 0.45 0.02"
+
+  >
+  </a-text>
+
+
+  <!-- ====================================
+       ANTERIOR
+  ===================================== -->
+
+  <a-entity
+
+    id="prevBtn"
+
+    class="clickable"
+
+    geometry="
+      primitive: plane;
+      width: 1.35;
+      height: 0.34
+    "
+
+    material="
+      color: #E85D75;
+      opacity: 0.95
+    "
+
+    position="-1.05 0.15 0.03"
+
+    text="
+      value: ◀  ANTERIOR;
+      align: center;
+      color: white;
+      width: 3
+    "
+
+  >
+  </a-entity>
+
+
+  <!-- ====================================
+       SIGUIENTE
+  ===================================== -->
+
+  <a-entity
+
+    id="nextBtn"
+
+    class="clickable"
+
+    geometry="
+      primitive: plane;
+      width: 1.35;
+      height: 0.34
+    "
+
+    material="
+      color: #45B86B;
+      opacity: 0.95
+    "
+
+    position="1.05 0.15 0.03"
+
+    text="
+      value: SIGUIENTE  ▶;
+      align: center;
+      color: white;
+      width: 3
+    "
+
+  >
+  </a-entity>
+
+
+  <!-- ====================================
+       CONTROL DE REPRODUCCIÓN
+  ===================================== -->
+
+  <a-text
+
+    value="CONTROL DE REPRODUCCIÓN"
+
+    align="center"
+
+    color="#FFFFFF"
+
+    width="3"
+
+    position="0 -0.10 0.02"
+
+  >
+  </a-text>
+
+
+  <!-- ====================================
+       RETROCEDER
+  ===================================== -->
+
+  <a-entity
+
+    id="backBtn"
+
+    class="clickable"
+
+    geometry="
+      primitive: plane;
+      width: 0.9;
+      height: 0.32
+    "
+
+    material="
+      color: #475569;
+      opacity: 0.95
+    "
+
+    position="-1.35 -0.40 0.03"
+
+    text="
+      value: ↶  -10 s;
+      align: center;
+      color: white;
+      width: 3
+    "
+
+  >
+  </a-entity>
+
+
+  <!-- ====================================
+       PAUSAR
+  ===================================== -->
+
+  <a-entity
+
+    id="pauseBtn"
+
+    class="clickable"
+
+    geometry="
+      primitive: plane;
+      width: 1.2;
+      height: 0.38
+    "
+
+    material="
+      color: #F4C542;
+      opacity: 0.98
+    "
+
+    position="0 -0.40 0.03"
+
+    text="
+      value: ❚❚  PAUSAR;
+      align: center;
+      color: #111827;
+      width: 3
+    "
+
+  >
+  </a-entity>
+
+
+  <!-- ====================================
+       ADELANTAR
+  ===================================== -->
+
+  <a-entity
+
+    id="forwardBtn"
+
+    class="clickable"
+
+    geometry="
+      primitive: plane;
+      width: 0.9;
+      height: 0.32
+    "
+
+    material="
+      color: #475569;
+      opacity: 0.95
+    "
+
+    position="1.35 -0.40 0.03"
+
+    text="
+      value: +10 s  ↷;
+      align: center;
+      color: white;
+      width: 3
+    "
+
+  >
+  </a-entity>
+
+</a-entity>
+
+
+<!-- ========================================
+     RESET
+========================================= -->
+
+<a-entity
+
+  id="resetBtn"
+
+  class="clickable"
+
+  geometry="
+    primitive: plane;
+    width: 1.3;
+    height: 0.34
+  "
+
+  material="
+    color: #3B82F6;
+    opacity: 0.95
+  "
+
+  position="0 0.15 -2"
+
+  text="
+    value: ↺  VOLVER AL TOUR;
+    align: center;
+    color: white;
+    width: 3
+  "
+
+>
+</a-entity>
+
+
+<!-- ========================================
+     ILUMINACIÓN
+========================================= -->
+
+<a-light
+
+  type="ambient"
+
+  intensity="1.3"
+
+>
+</a-light>
+
+
+<a-light
+
+  type="directional"
+
+  position="2 4 3"
+
+  intensity="1.4"
+
+>
+</a-light>
+```
+
+  </a-scene>
+
+  <!-- ==========================================
+       JAVASCRIPT
+  =========================================== -->
+
+  <script>
+
+
+    // =====================================================
+    // CONFIGURACIÓN DE LAS FASES
+    // =====================================================
+
+    const phaseConfig = {
+
+      1: {
+
+        name: "Interfase",
+
+        duration: 5,
+
+        description:
+          "La célula crece y realiza sus funciones normales. También duplica su ADN para prepararse para la división celular."
+
+      },
+
+
+      2: {
+
+        name: "Profase",
+
+        duration: 11.65,
+
+        description:
+          "El ADN se condensa y forma cromosomas visibles. La envoltura nuclear comienza a desaparecer y se forma el huso mitótico."
+
+      },
+
+
+      3: {
+
+        name: "Metafase",
+
+        duration: 8.33,
+
+        description:
+          "Los cromosomas se alinean en el centro de la célula. Las fibras del huso se unen a los cromosomas y los preparan para su separación."
+
+      },
+
+
+      4: {
+
+        name: "Anafase / Telofase",
+
+        duration: 9.10,
+
+        description:
+          "Las cromátidas hermanas se separan y se desplazan hacia polos opuestos. Después se forman dos nuevos núcleos y la célula se divide."
+
+      }
+
+    };
+
+
+    // =====================================================
+    // ESTADO
+    // =====================================================
+
+    let currentPhase = 1;
+
+    let paused = false;
+
+    let progress = 0;
+
+
+    // =====================================================
+    // DATOS DE ANIMACIÓN
+    // =====================================================
+
+    const animations = {};
+
+
+    // =====================================================
+    // ELEMENTOS HTML
+    // =====================================================
+
+    const phaseTitle =
+      document.querySelector(
+        "#phaseTitle"
+      );
+
+
+    const phaseCounter =
+      document.querySelector(
+        "#phaseCounter"
+      );
+
+
+    const progressBar =
+      document.querySelector(
+        "#progressBar"
+      );
+
+
+    const timeInfo =
+      document.querySelector(
+        "#timeInfo"
+      );
+
+
+    const pauseBtn =
+      document.querySelector(
+        "#pauseBtn"
+      );
+
+
+    // =====================================================
+    // ELEMENTOS DEL PANEL DE DESCRIPCIÓN
+    // =====================================================
+
+    const descriptionTitle =
+      document.querySelector(
+        "#descriptionTitle"
+      );
+
+
+    const descriptionText =
+      document.querySelector(
+        "#descriptionText"
+      );
+
+
+    // =====================================================
+    // REGISTRAR ANIMACIÓN DE UN MODELO
+    // =====================================================
+
+    function registerAnimation(
+      elementId
+    ) {
+
+      const entity =
+        document.querySelector(
+          "#" + elementId
+        );
+
+
+      if (!entity) {
+
+        console.warn(
+          "No se encontró:",
+          elementId
+        );
+
+        return;
+
+      }
+
+
+      entity.addEventListener(
+
+        "model-loaded",
+
+        function(event) {
+
+          const model =
+            event.detail.model;
+
+
+          if (
+            !model ||
+            !model.animations ||
+            model.animations.length === 0
+          ) {
+
+            console.warn(
+              "El modelo " +
+              elementId +
+              " no contiene animaciones."
+            );
+
+            return;
+
+          }
+
+
+          // Usaremos la primera animación
+
+          const clip =
+            model.animations[0];
+
+
+          // Crear mixer independiente
+
+          const mixer =
+            new THREE.AnimationMixer(
+              model
+            );
+
+
+          // Crear acción
+
+          const action =
+            mixer.clipAction(
+              clip
+            );
+
+
+          action.setLoop(
+            THREE.LoopOnce,
+            1
+          );
+
+
+          action.clampWhenFinished =
+            true;
+
+
+          action.play();
+
+
+          // Comenzar pausado
+
+          action.paused =
+            true;
+
+
+          // Guardar información
+
+          animations[elementId] = {
+
+            entity: entity,
+
+            model: model,
+
+            mixer: mixer,
+
+            action: action,
+
+            clip: clip,
+
+            clipDuration: clip.duration
+
+          };
+
+
+          console.log(
+
+            "Animación cargada:",
+
+            elementId,
+
+            "| Animación:",
+
+            clip.name,
+
+            "| Duración real:",
+
+            clip.duration.toFixed(3),
+
+            "segundos"
+
+          );
+
+
+          // Sincronizar si corresponde
+
+          if (
+
+            currentPhase ===
+
+            getPhaseFromElement(
+              elementId
+            )
+
+          ) {
+
+            syncCurrentAnimation();
+
+          }
+
+        }
+
+      );
+
+    }
+
+
+    // =====================================================
+    // OBTENER FASE DE UN ELEMENTO
+    // =====================================================
+
+    function getPhaseFromElement(
+      elementId
+    ) {
+
+      if (
+        elementId === "phase1"
+      ) {
+
+        return 1;
+
+      }
+
+
+      if (
+        elementId === "phase2"
+      ) {
+
+        return 2;
+
+      }
+
+
+      if (
+        elementId === "phase3"
+      ) {
+
+        return 3;
+
+      }
+
+
+      if (
+        elementId === "phase4Left" ||
+        elementId === "phase4Right"
+      ) {
+
+        return 4;
+
+      }
+
+
+      return 0;
+
+    }
+
+
+    // =====================================================
+    // OBTENER ANIMACIONES DE LA FASE ACTUAL
+    // =====================================================
+
+    function getCurrentAnimations() {
+
+      const result = [];
+
+
+      if (
+        currentPhase === 1 &&
+        animations.phase1
+      ) {
+
+        result.push(
+          animations.phase1
+        );
+
+      }
+
+
+      if (
+        currentPhase === 2 &&
+        animations.phase2
+      ) {
+
+        result.push(
+          animations.phase2
+        );
+
+      }
+
+
+      if (
+        currentPhase === 3 &&
+        animations.phase3
+      ) {
+
+        result.push(
+          animations.phase3
+        );
+
+      }
+
+
+      if (currentPhase === 4) {
+
+        if (
+          animations.phase4Left
+        ) {
+
+          result.push(
+            animations.phase4Left
+          );
+
+        }
+
+
+        if (
+          animations.phase4Right
+        ) {
+
+          result.push(
+            animations.phase4Right
+          );
+
+        }
+
+      }
+
+
+      return result;
+
+    }
+
+
+    // =====================================================
+    // SINCRONIZAR ANIMACIÓN CON PROGRESS
+    // =====================================================
+
+    function syncCurrentAnimation() {
+
+      const duration =
+        phaseConfig[
+          currentPhase
+        ].duration;
+
+
+      const phaseProgress =
+        Math.min(
+
+          Math.max(
+
+            progress /
+            duration,
+
+            0
+
+          ),
+
+          1
+
+        );
+
+
+      const currentAnimations =
+        getCurrentAnimations();
+
+
+      currentAnimations.forEach(
+
+        data => {
+
+          // Convertir el tiempo de experiencia
+          // al tiempo real del AnimationClip
+
+          const animationTime =
+            phaseProgress *
+            data.clipDuration;
+
+
+          data.action.paused =
+            true;
+
+
+          data.action.time =
+            animationTime;
+
+
+          data.mixer.update(0);
+
+        }
+
+      );
+
+
+      // Actualizar separación de fase 4
+
+      updatePhase4Separation();
+
+    }
+
+
+    // =====================================================
+    // SEPARACIÓN DE ANAFASE
+    // =====================================================
+
+    function updatePhase4Separation() {
+
+      if (
+        currentPhase !== 4
+      ) {
+
+        return;
+
+      }
+
+
+      const left =
+        document.querySelector(
+          "#phase4Left"
+        );
+
+
+      const right =
+        document.querySelector(
+          "#phase4Right"
+        );
+
+
+      if (
+        !left ||
+        !right
+      ) {
+
+        return;
+
+      }
+
+
+      const duration =
+        phaseConfig[4].duration;
+
+
+      const t =
+        Math.min(
+
+          Math.max(
+
+            progress /
+            duration,
+
+            0
+
+          ),
+
+          1
+
+        );
+
+
+      // Suavizado
+
+      const smoothT =
+        t * t * (3 - 2 * t);
+
+
+      // Posición inicial
+
+      const startX = 0;
+
+
+      // Posición final
+
+      const endLeftX = -1;
+
+      const endRightX = 1;
+
+
+      // Interpolación
+
+      const leftX =
+        startX +
+        (endLeftX - startX) *
+        smoothT;
+
+
+      const rightX =
+        startX +
+        (endRightX - startX) *
+        smoothT;
+
+
+      // Aplicar posiciones
+
+      left.object3D.position.set(
+
+        leftX,
+
+        3,
+
+        -2
+
+      );
+
+
+      right.object3D.position.set(
+
+        rightX,
+
+        3,
+
+        -2
+
+      );
+
+    }
+
+
+    // =====================================================
+    // MOSTRAR MODELO
+    // =====================================================
+
+    function showModel(
+      phase
+    ) {
+
+      for (
+
+        let i = 1;
+
+        i <= 4;
+
+        i++
+
+      ) {
+
+        const model =
+          document.querySelector(
+            "#phase" + i
+          );
+
+
+        if (!model) {
+
+          continue;
+
+        }
+
+
+        model.setAttribute(
+
+          "visible",
+
+          i === phase
+
+        );
+
+      }
+
+
+      // ==========================================
+      // INFORMACIÓN SUPERIOR
+      // ==========================================
+
+      phaseTitle.textContent =
+        phaseConfig[
+          phase
+        ].name;
+
+
+      phaseCounter.textContent =
+        "FASE " +
+        phase +
+        " DE 4";
+
+
+      // ==========================================
+      // PANEL DE DESCRIPCIÓN VR
+      // ==========================================
+
+      descriptionTitle.setAttribute(
+
+        "value",
+
+        phaseConfig[
+          phase
+        ].name
+
+      );
+
+
+      descriptionText.setAttribute(
+
+        "value",
+
+        phaseConfig[
+          phase
+        ].description
+
+      );
+
+
+      // ==========================================
+      // REINICIAR TIEMPO
+      // ==========================================
+
+      progress = 0;
+
+
+      progressBar.style.width =
+        "0%";
+
+
+      updateTimeDisplay();
+
+
+      // ==========================================
+      // SINCRONIZAR ANIMACIÓN
+      // ==========================================
+
+      syncCurrentAnimation();
+
+    }
+
+
+    // =====================================================
+    // SIGUIENTE FASE
+    // =====================================================
+
+    function nextPhase() {
+
+      currentPhase++;
+
+
+      if (
+        currentPhase > 4
+      ) {
+
+        currentPhase = 1;
+
+      }
+
+
+      showModel(
+        currentPhase
+      );
+
+    }
+
+
+    // =====================================================
+    // FASE ANTERIOR
+    // =====================================================
+
+    function previousPhase() {
+
+      currentPhase--;
+
+
+      if (
+        currentPhase < 1
+      ) {
+
+        currentPhase = 4;
+
+      }
+
+
+      showModel(
+        currentPhase
+      );
+
+    }
+
+
+    // =====================================================
+    // PAUSA / REPRODUCCIÓN
+    // =====================================================
+
+    function togglePause() {
+
+      paused = !paused;
+
+
+      const currentAnimations =
+        getCurrentAnimations();
+
+
+      currentAnimations.forEach(
+
+        data => {
+
+          data.action.paused =
+            paused;
+
+        }
+
+      );
+
+
+      if (paused) {
+
+        pauseBtn.setAttribute(
+
+          "text",
+
+          "value: ▶  REPRODUCIR; " +
+          "align: center; " +
+          "color: #111827; " +
+          "width: 3"
+
+        );
+
+      }
+
+      else {
+
+        pauseBtn.setAttribute(
+
+          "text",
+
+          "value: ❚❚  PAUSAR; " +
+          "align: center; " +
+          "color: #111827; " +
+          "width: 3"
+
+        );
+
+      }
+
+    }
+
+
+    // =====================================================
+    // ADELANTAR
+    // =====================================================
+
+    function forward() {
+
+      const duration =
+        phaseConfig[
+          currentPhase
+        ].duration;
+
+
+      progress =
+        Math.min(
+
+          progress + 10,
+
+          duration
+
+        );
+
+
+      syncCurrentAnimation();
+
+
+      updateTimeDisplay();
+
+
+      if (
+        progress >= duration
+      ) {
+
+        nextPhase();
+
+      }
+
+    }
+
+
+    // =====================================================
+    // RETROCEDER
+    // =====================================================
+
+    function backward() {
+
+      progress -= 10;
+
+
+      if (
+        progress >= 0
+      ) {
+
+        syncCurrentAnimation();
+
+        updateTimeDisplay();
+
+        return;
+
+      }
+
+
+      previousPhase();
+
+
+      const duration =
+        phaseConfig[
+          currentPhase
+        ].duration;
+
+
+      progress =
+        Math.max(
+
+          duration - 10,
+
+          0
+
+        );
+
+
+      syncCurrentAnimation();
+
+
+      updateTimeDisplay();
+
+    }
+
+
+    // =====================================================
+    // ACTUALIZAR TEXTO DEL TIEMPO
+    // =====================================================
+
+    function updateTimeDisplay() {
+
+      const duration =
+        phaseConfig[
+          currentPhase
+        ].duration;
+
+
+      timeInfo.textContent =
+
+        progress.toFixed(2) +
+
+        " / " +
+
+        duration.toFixed(2) +
+
+        " s";
+
+    }
+
+
+    // =====================================================
+    // RESET
+    // =====================================================
+
+    function resetExperience() {
+
+      const finalScene =
+        "scene_IMG_20260528_152913_00_029";
+
+      const targetUrl =
+        "../index.html?startscene=" +
+        encodeURIComponent(finalScene);
+
+
+      if (
+        window.parent &&
+        window.parent !== window
+      ) {
+
+        window.parent.location.href =
+          targetUrl;
+
+      } else {
+
+        window.location.href =
+          targetUrl;
+
+      }
+
+    }
+
+
+    // =====================================================
+    // HOVER DE BOTONES
+    // =====================================================
+
+    document
+
+      .querySelectorAll(
+        ".clickable"
+      )
+
+      .forEach(
+
+        button => {
+
+          button.addEventListener(
+
+            "mouseenter",
+
+            () => {
+
+              button.object3D.scale.set(
+
+                1.08,
+
+                1.08,
+
+                1.08
+
+              );
+
+            }
+
+          );
+
+
+          button.addEventListener(
+
+            "mouseleave",
+
+            () => {
+
+              button.object3D.scale.set(
+
+                1,
+
+                1,
+
+                1
+
+              );
+
+            }
+
+          );
+
+        }
+
+      );
+
+
+    // =====================================================
+    // EVENTOS DE LOS BOTONES
+    // =====================================================
+
+    document
+
+      .querySelector(
+        "#nextBtn"
+      )
+
+      .addEventListener(
+
+        "click",
+
+        nextPhase
+
+      );
+
+
+    document
+
+      .querySelector(
+        "#prevBtn"
+      )
+
+      .addEventListener(
+
+        "click",
+
+        previousPhase
+
+      );
+
+
+    document
+
+      .querySelector(
+        "#pauseBtn"
+      )
+
+      .addEventListener(
+
+        "click",
+
+        togglePause
+
+      );
+
+
+    document
+
+      .querySelector(
+        "#forwardBtn"
+      )
+
+      .addEventListener(
+
+        "click",
+
+        forward
+
+      );
+
+
+    document
+
+      .querySelector(
+        "#backBtn"
+      )
+
+      .addEventListener(
+
+        "click",
+
+        backward
+
+      );
+
+
+    document
+
+      .querySelector(
+        "#resetBtn"
+      )
+
+      .addEventListener(
+
+        "click",
+
+        resetExperience
+
+      );
+
+
+    // =====================================================
+    // REGISTRAR LOS GLB
+    // =====================================================
+
+    registerAnimation(
+      "phase1"
+    );
+
+
+    registerAnimation(
+      "phase2"
+    );
+
+
+    registerAnimation(
+      "phase3"
+    );
+
+
+    registerAnimation(
+      "phase4Left"
+    );
+
+
+    registerAnimation(
+      "phase4Right"
+    );
+
+
+    // =====================================================
+    // RELOJ PRINCIPAL
+    // =====================================================
+
+    let lastTime =
+      performance.now();
+
+
+    function updateExperience(
+      time
+    ) {
+
+      const delta =
+        Math.min(
+
+          (time - lastTime) /
+          1000,
+
+          0.1
+
+        );
+
+
+      lastTime = time;
+
+
+      if (!paused) {
+
+        const duration =
+          phaseConfig[
+            currentPhase
+          ].duration;
+
+
+        // Avanzar tiempo
+
+        progress += delta;
+
+
+        // No superar duración
+
+        progress =
+          Math.min(
+
+            progress,
+
+            duration
+
+          );
+
+
+        // Sincronizar animación
+
+        syncCurrentAnimation();
+
+
+        // Barra
+
+        const percentage =
+          Math.min(
+
+            (progress / duration) *
+            100,
+
+            100
+
+          );
+
+
+        progressBar.style.width =
+          percentage + "%";
+
+
+        // Texto
+
+        updateTimeDisplay();
+
+
+        // Final de fase
+
+        if (
+          progress >= duration
+        ) {
+
+          nextPhase();
+
+        }
+
+      }
+
+
+      requestAnimationFrame(
+        updateExperience
+      );
+
+    }
+
+
+    // =====================================================
+    // INICIALIZACIÓN
+    // =====================================================
+
+    showModel(
+      currentPhase
+    );
+
+
+    updateTimeDisplay();
+
+
+    requestAnimationFrame(
+      updateExperience
+    );
+
+
+  </script>
 
 </body>
 
