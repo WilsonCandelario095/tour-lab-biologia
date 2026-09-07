@@ -277,26 +277,13 @@ renderer="
 
   >
 
-    <!-- Cursor escritorio -->
+    <!-- Cursor invisible para interacción con mouse -->
 
     <a-entity
 
       cursor="
-        fuse: true;
-        fuseTimeout: 600
-      "
-
-      position="0 0 -1"
-
-      geometry="
-        primitive: ring;
-        radiusInner: 0.018;
-        radiusOuter: 0.028
-      "
-
-      material="
-        color: #111827;
-        shader: flat
+        rayOrigin: mouse;
+        fuse: false
       "
 
       raycaster="
@@ -1710,7 +1697,7 @@ renderer="
 
           "troika-text",
 
-          "value: ▶  REPRODUCIR; " +
+          "value: ▶REPRODUCIR; " +
           "align: center; " +
           "color: #111827; " +
           "font-size: 0.14; " +
